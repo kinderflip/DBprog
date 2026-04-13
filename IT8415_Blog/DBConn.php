@@ -6,7 +6,7 @@
 
 $host   = 'localhost';
 $dbuser = 'u202200881';
-$dbpass = 'asdASD123!';   // change this after first login
+$dbpass = 'tagzag-5xowmo-zypkIh';
 $dbname = 'db202200881';
 
 $conn = mysqli_connect($host, $dbuser, $dbpass, $dbname);
@@ -21,7 +21,7 @@ mysqli_set_charset($conn, 'utf8mb4');
 function requireRole(...$roles) {
     if (session_status() === PHP_SESSION_NONE) session_start();
     if (!isset($_SESSION['uid']) || !in_array($_SESSION['role'], $roles)) {
-        header('Location: /login.php');
+        header('Location: ' . str_repeat('../', substr_count($_SERVER['PHP_SELF'], '/') - 2) . 'login.php');
         exit;
     }
 }
