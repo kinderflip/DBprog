@@ -1,0 +1,18 @@
+# Uploaded user files (keep directory structure)
+IT8415_Blog/uploads/*
+!IT8415_Blog/uploads/.gitkeep
+IT8415_Blog/images/*
+!IT8415_Blog/images/.gitkeep
+
+# Archives and compiled files
+*.rar
+*.zip
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.idea/
+.vscode/
+nbproject/

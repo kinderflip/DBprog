@@ -1,0 +1,140 @@
+/* ============================================================
+   IT8415 Blog — style.css
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f5f7fa;
+    color: #333;
+    line-height: 1.6;
+}
+
+a { color: #0066cc; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ---- Navbar ---- */
+.navbar {
+    background: #1a1a2e;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.nav-brand a { color: #fff; font-size: 1.3rem; font-weight: 700; }
+.nav-links { list-style: none; display: flex; gap: 1.2rem; }
+.nav-links a { color: #ccc; font-size: 0.9rem; transition: color 0.2s; }
+.nav-links a:hover { color: #fff; text-decoration: none; }
+
+/* ---- Container ---- */
+.container { max-width: 1100px; margin: 2rem auto; padding: 0 1.5rem; }
+
+/* ---- Alerts ---- */
+.alert { padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem; }
+.alert-error   { background: #fdecea; border-left: 4px solid #e53935; color: #b71c1c; }
+.alert-success { background: #e8f5e9; border-left: 4px solid #43a047; color: #1b5e20; }
+
+/* ---- Forms ---- */
+.form-page { max-width: 480px; }
+.form-page h2 { margin-bottom: 1.5rem; font-size: 1.6rem; }
+.form-group { margin-bottom: 1.1rem; }
+.form-group label { display: block; font-weight: 600; margin-bottom: 0.3rem; font-size: 0.9rem; }
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%; padding: 0.55rem 0.75rem;
+    border: 1px solid #ccc; border-radius: 6px;
+    font-size: 0.95rem; transition: border-color 0.2s;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus { outline: none; border-color: #0066cc; }
+.form-group textarea { resize: vertical; min-height: 120px; }
+.field-error { color: #e53935; font-size: 0.82rem; display: none; margin-top: 3px; }
+.form-footer { margin-top: 1rem; font-size: 0.9rem; color: #666; }
+
+/* ---- Buttons ---- */
+.btn { padding: 0.55rem 1.3rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: background 0.2s; }
+.btn-primary  { background: #0066cc; color: #fff; }
+.btn-primary:hover  { background: #0052a3; }
+.btn-danger   { background: #e53935; color: #fff; }
+.btn-danger:hover   { background: #b71c1c; }
+.btn-secondary { background: #6c757d; color: #fff; }
+.btn-secondary:hover { background: #495057; }
+.btn-sm { padding: 0.3rem 0.8rem; font-size: 0.83rem; }
+
+/* ---- Post Cards ---- */
+.posts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+.post-card {
+    background: #fff; border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    overflow: hidden; transition: transform 0.2s;
+}
+.post-card:hover { transform: translateY(-3px); }
+.post-card img { width: 100%; height: 180px; object-fit: cover; }
+.post-card-body { padding: 1rem; }
+.post-card-body h3 { font-size: 1.05rem; margin-bottom: 0.4rem; }
+.post-card-body p  { font-size: 0.88rem; color: #666; margin-bottom: 0.8rem; }
+.post-meta { font-size: 0.78rem; color: #999; display: flex; justify-content: space-between; align-items: center; }
+.badge { background: #e3f0ff; color: #0066cc; padding: 0.2rem 0.5rem; border-radius: 20px; font-size: 0.75rem; }
+
+/* ---- Stars ---- */
+.star-rating { display: flex; gap: 4px; align-items: center; margin: 0.5rem 0; }
+.star { font-size: 1.4rem; cursor: pointer; color: #ccc; transition: color 0.15s; }
+.star.active, .star.hover { color: #f5a623; }
+.avg-rating { font-size: 0.85rem; color: #666; margin-left: 6px; }
+
+/* ---- Post Detail ---- */
+.post-detail { background: #fff; border-radius: 10px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+.post-detail img { width: 100%; max-height: 420px; object-fit: cover; border-radius: 8px; margin-bottom: 1.5rem; }
+.post-detail h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+.post-content { margin-top: 1.2rem; line-height: 1.8; }
+
+/* ---- Comments ---- */
+.comments-section { margin-top: 2rem; }
+.comment-card { background: #f9f9f9; border-radius: 8px; padding: 0.9rem 1rem; margin-bottom: 0.8rem; }
+.comment-author { font-weight: 600; font-size: 0.9rem; }
+.comment-date   { font-size: 0.78rem; color: #999; margin-left: 8px; }
+.comment-text   { margin-top: 0.4rem; font-size: 0.93rem; }
+
+/* ---- Tables (admin) ---- */
+.data-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+.data-table th { background: #1a1a2e; color: #fff; padding: 0.75rem 1rem; text-align: left; font-size: 0.88rem; }
+.data-table td { padding: 0.7rem 1rem; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: #f5f7fa; }
+
+/* ---- Search ---- */
+.search-bar { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.search-bar input, .search-bar select { padding: 0.5rem 0.75rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9rem; }
+.search-bar input[type="text"] { flex: 1; min-width: 200px; }
+
+/* ---- Pagination ---- */
+.pagination { display: flex; gap: 0.4rem; margin-top: 2rem; justify-content: center; }
+.pagination a, .pagination span {
+    padding: 0.4rem 0.8rem; border: 1px solid #ddd; border-radius: 6px;
+    font-size: 0.9rem; color: #333;
+}
+.pagination a:hover { background: #e3f0ff; text-decoration: none; }
+.pagination .current { background: #0066cc; color: #fff; border-color: #0066cc; }
+
+/* ---- Page header ---- */
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.page-header h2 { font-size: 1.6rem; }
+
+/* ---- Char counter ---- */
+.char-counter { font-size: 0.78rem; color: #999; text-align: right; margin-top: 2px; }
+
+/* ---- Responsive ---- */
+@media (max-width: 640px) {
+    .navbar { padding: 0 1rem; }
+    .nav-links { gap: 0.7rem; }
+    .posts-grid { grid-template-columns: 1fr; }
+    .page-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+}
