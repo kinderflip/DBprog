@@ -54,7 +54,9 @@ $posts = mysqli_stmt_get_result($stmt);
     <div class="posts-grid">
     <?php while ($post = mysqli_fetch_assoc($posts)): ?>
         <div class="post-card">
-            <img src="<?= htmlspecialchars($post['image_path'] ?: 'images/default.jpg') ?>" alt="Post Image">
+            <?php if ($post['image_path']): ?>
+            <img src="<?= htmlspecialchars($post['image_path']) ?>" alt="Post Image">
+            <?php endif; ?>
             <div class="post-card-body">
                 <h3><a href="view_post.php?id=<?= $post['post_id'] ?>"><?= htmlspecialchars($post['title']) ?></a></h3>
                 <p><?= htmlspecialchars(mb_strimwidth($post['short_desc'], 0, 120, '...')) ?></p>
