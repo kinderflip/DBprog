@@ -70,6 +70,9 @@ $comments = mysqli_stmt_get_result($cFetch);
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= htmlspecialchars($post['title']) ?> — The Blog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
@@ -78,65 +81,91 @@ $comments = mysqli_stmt_get_result($cFetch);
 
 <div class="container">
     <div class="post-detail">
-        <span class="badge"><?= htmlspecialchars($post['category'] ?? 'Uncategorised') ?></span>
-        <h1 style="margin-top:0.5rem;"><?= htmlspecialchars($post['title']) ?></h1>
-        <p style="color:#999;font-size:0.88rem;margin-top:0.3rem;">
-            By <strong><?= htmlspecialchars($post['author']) ?></strong> &middot;
-            <?= date('d M Y', strtotime($post['created_at'])) ?>
-        </p>
+        <?php if (!empty($post['image_path']) && file_exists($post['image_path'])): ?>
+            <img class="post-hero-img" src="<?= htmlspecialchars($post['image_path']) ?>" alt="Post Image">
+        <?php endif; ?>
 
-        <!-- Star Rating -->
-        <div class="star-rating" id="starWidget" data-post="<?= $post_id ?>" data-user="<?= $_SESSION['uid'] ?? 0 ?>">
-            <?php for ($s = 1; $s <= 5; $s++): ?>
-                <span class="star <?= ($s <= $userRating) ? 'active' : '' ?>" data-val="<?= $s ?>">&#9733;</span>
-            <?php endfor; ?>
-            <span class="avg-rating" id="avgRating">
-                <?= $post['avg_rating'] ? '⭐ ' . $post['avg_rating'] . ' (' . $post['total_ratings'] . ' ratings)' : 'No ratings yet' ?>
-            </span>
+        <div class="post-detail-body">
+            <div class="post-detail-main">
+                <span class="badge"><?= htmlspecialchars($post['category'] ?? 'Uncategorised') ?></span>
+                <h1><?= htmlspecialchars($post['title']) ?></h1>
+                <p style="color:var(--color-text-muted); font-size:0.9rem; margin-top:0.4rem;">
+                    By <strong style="color:var(--color-text);"><?= htmlspecialchars($post['author']) ?></strong> &middot;
+                    <?= date('d M Y', strtotime($post['created_at'])) ?>
+                </p>
+
+                <div class="post-content">
+                    <?= nl2br(htmlspecialchars($post['full_content'])) ?>
+                </div>
+
+                <?php if ($post['pdf_path']): ?>
+                    <p style="margin-top:1.8rem;">
+                        <a href="<?= htmlspecialchars($post['pdf_path']) ?>" class="btn btn-accent" download>&#128229; Download PDF</a>
+                    </p>
+                <?php endif; ?>
+            </div>
+
+            <aside class="post-detail-side">
+                <h4 style="margin-bottom:0.7rem; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--color-text-muted);">Post Info</h4>
+
+                <div class="meta-row">
+                    <span class="label">Author</span>
+                    <span class="value"><?= htmlspecialchars($post['author']) ?></span>
+                </div>
+                <div class="meta-row">
+                    <span class="label">Category</span>
+                    <span class="value"><?= htmlspecialchars($post['category'] ?? '—') ?></span>
+                </div>
+                <div class="meta-row">
+                    <span class="label">Published</span>
+                    <span class="value"><?= date('d M Y', strtotime($post['created_at'])) ?></span>
+                </div>
+
+                <h4 style="margin-top:1.2rem; margin-bottom:0.4rem; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--color-text-muted);">Rate this post</h4>
+                <div class="star-rating" id="starWidget" data-post="<?= $post_id ?>" data-user="<?= $_SESSION['uid'] ?? 0 ?>">
+                    <?php for ($s = 1; $s <= 5; $s++): ?>
+                        <span class="star <?= ($s <= $userRating) ? 'active' : '' ?>" data-val="<?= $s ?>">&#9733;</span>
+                    <?php endfor; ?>
+                </div>
+                <div class="avg-rating" id="avgRating" style="margin-left:0;">
+                    <?= $post['avg_rating'] ? '&#11088; ' . $post['avg_rating'] . ' (' . $post['total_ratings'] . ' ratings)' : 'No ratings yet' ?>
+                </div>
+                <?php if (!isset($_SESSION['uid'])): ?>
+                    <p style="font-size:0.8rem; color:var(--color-text-muted); margin-top:0.5rem;"><a href="login.php">Log in</a> to rate.</p>
+                <?php endif; ?>
+            </aside>
         </div>
-
-        <?php if (!isset($_SESSION['uid'])): ?>
-            <p style="font-size:0.83rem;color:#999;"><a href="login.php">Log in</a> to rate this post.</p>
-        <?php endif; ?>
-
-        <?php if ($post['image_path']): ?>
-            <img src="<?= htmlspecialchars($post['image_path']) ?>" alt="Post Image">
-        <?php endif; ?>
-
-        <div class="post-content">
-            <?= nl2br(htmlspecialchars($post['full_content'])) ?>
-        </div>
-
-        <?php if ($post['pdf_path']): ?>
-            <p style="margin-top:1.5rem;">
-                <a href="<?= htmlspecialchars($post['pdf_path']) ?>" class="btn btn-secondary" download>Download PDF</a>
-            </p>
-        <?php endif; ?>
     </div>
 
     <!-- Comments -->
     <div class="comments-section">
-        <h3 style="margin-bottom:1rem;">Comments</h3>
+        <h3>&#128172; Comments (<?= mysqli_num_rows($comments) ?>)</h3>
 
         <?php if (mysqli_num_rows($comments) === 0): ?>
-            <p style="color:#999;">No comments yet. Be the first!</p>
+            <div class="empty-state">
+                <div class="icon">&#128172;</div>
+                <p>No comments yet. Be the first to share your thoughts!</p>
+            </div>
         <?php else: ?>
             <?php while ($c = mysqli_fetch_assoc($comments)): ?>
             <div class="comment-card" id="comment-<?= $c['comment_id'] ?>">
-                <span class="comment-author"><?= htmlspecialchars($c['username']) ?></span>
-                <span class="comment-date"><?= date('d M Y H:i', strtotime($c['created_at'])) ?></span>
-                <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-                    <button class="btn btn-danger btn-sm delete-comment" data-id="<?= $c['comment_id'] ?>" style="float:right;">Delete</button>
-                <?php endif; ?>
-                <p class="comment-text"><?= nl2br(htmlspecialchars($c['comment_text'])) ?></p>
+                <div class="avatar-circle"><?= strtoupper(substr($c['username'], 0, 1)) ?></div>
+                <div class="comment-body">
+                    <span class="comment-author"><?= htmlspecialchars($c['username']) ?></span>
+                    <span class="comment-date"><?= date('d M Y H:i', strtotime($c['created_at'])) ?></span>
+                    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                        <button class="btn btn-danger btn-sm delete-comment" data-id="<?= $c['comment_id'] ?>" style="float:right;">Delete</button>
+                    <?php endif; ?>
+                    <p class="comment-text"><?= nl2br(htmlspecialchars($c['comment_text'])) ?></p>
+                </div>
             </div>
             <?php endwhile; ?>
         <?php endif; ?>
 
         <!-- Add Comment Form -->
         <?php if (isset($_SESSION['uid'])): ?>
-        <div style="margin-top:1.5rem;">
-            <h4>Add a Comment</h4>
+        <div style="margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid var(--color-border);">
+            <h4 style="margin-bottom:0.7rem; font-size:1rem;">Add a Comment</h4>
             <?php if ($commentError): ?>
                 <div class="alert alert-error"><?= htmlspecialchars($commentError) ?></div>
             <?php endif; ?>
@@ -149,7 +178,7 @@ $comments = mysqli_stmt_get_result($cFetch);
             </form>
         </div>
         <?php else: ?>
-            <p style="margin-top:1rem;"><a href="login.php">Log in</a> to leave a comment.</p>
+            <p style="margin-top:1.2rem; color:var(--color-text-muted);"><a href="login.php">Log in</a> to leave a comment.</p>
         <?php endif; ?>
     </div>
 </div>
@@ -167,7 +196,6 @@ $('.star').on('mouseover', function() {
 }).on('click', function() {
     const rating  = $(this).data('val');
     const post_id = $('#starWidget').data('post');
-    const uid     = $('#starWidget').data('user');
 
     $.ajax({
         url: 'ajax/rate.php',
@@ -179,7 +207,7 @@ $('.star').on('mouseover', function() {
                 $('.star').each(function() {
                     $(this).toggleClass('active', $(this).data('val') <= rating);
                 });
-                $('#avgRating').text('⭐ ' + res.avg + ' (' + res.count + ' ratings)');
+                $('#avgRating').html('⭐ ' + res.avg + ' (' + res.count + ' ratings)');
             }
         }
     });

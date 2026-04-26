@@ -3,7 +3,12 @@ session_start();
 require_once '../DBConn.php';
 requireRole('creator', 'admin');
 
-$post_id = (int)($_GET['id'] ?? 0);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Location: dashboard.php');
+    exit;
+}
+
+$post_id = (int)($_POST['id'] ?? 0);
 $uid     = $_SESSION['uid'];
 
 if ($_SESSION['role'] === 'admin') {

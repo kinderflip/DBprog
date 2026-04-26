@@ -28,37 +28,63 @@ $posts = mysqli_stmt_get_result($stmt);
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Posts — Creator Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/style.css">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 <body>
 <?php include '../includes/nav.php'; ?>
 <div class="container">
-    <div class="page-header">
-        <h2>My Posts</h2>
-        <a href="add_post.php" class="btn btn-primary">+ New Post</a>
+    <div class="hero-header">
+        <div>
+            <h2>&#9997; My Posts</h2>
+            <p>Manage and publish your content</p>
+        </div>
+        <a href="add_post.php" class="btn btn-primary">&#43; New Post</a>
     </div>
 
+    <?php if (mysqli_num_rows($posts) === 0): ?>
+        <div class="empty-state">
+            <div class="icon">&#128221;</div>
+            <p style="font-size:1rem; margin-bottom:0.5rem;">You haven't written any posts yet.</p>
+            <p style="font-size:0.9rem; margin-bottom:1rem;">Click the button below to create your first one.</p>
+            <a href="add_post.php" class="btn btn-primary">&#43; Create First Post</a>
+        </div>
+    <?php else: ?>
     <table class="data-table">
         <thead>
-            <tr><th>Title</th><th>Category</th><th>Status</th><th>Ratings</th><th>Date</th><th>Actions</th></tr>
+            <tr><th>Title</th><th>Category</th><th>Status</th><th>Ratings</th><th>Date</th><th style="text-align:right;">Actions</th></tr>
         </thead>
         <tbody>
         <?php while ($p = mysqli_fetch_assoc($posts)): ?>
             <tr>
-                <td><?= htmlspecialchars($p['title']) ?></td>
-                <td><?= htmlspecialchars($p['cat_name'] ?? '—') ?></td>
-                <td><?= $p['published'] ? '<span style="color:green;">Published</span>' : '<span style="color:#999;">Draft</span>' ?></td>
-                <td><?= $p['ratings'] ?></td>
-                <td><?= date('d M Y', strtotime($p['created_at'])) ?></td>
                 <td>
-                    <a href="edit_post.php?id=<?= $p['post_id'] ?>" class="btn btn-secondary btn-sm">Edit</a>
-                    <a href="delete_post.php?id=<?= $p['post_id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Delete this post?')">Delete</a>
+                    <a href="../view_post.php?id=<?= $p['post_id'] ?>" style="font-weight:500;"><?= htmlspecialchars($p['title']) ?></a>
+                </td>
+                <td><span class="badge"><?= htmlspecialchars($p['cat_name'] ?? '—') ?></span></td>
+                <td>
+                    <?php if ($p['published']): ?>
+                        <span class="status-pill status-published">Published</span>
+                    <?php else: ?>
+                        <span class="status-pill status-draft">Draft</span>
+                    <?php endif; ?>
+                </td>
+                <td>&#11088; <?= $p['ratings'] ?></td>
+                <td style="color:var(--color-text-muted); font-size:0.85rem;"><?= date('d M Y', strtotime($p['created_at'])) ?></td>
+                <td style="text-align:right;">
+                    <a href="edit_post.php?id=<?= $p['post_id'] ?>" class="btn btn-sm">Edit</a>
+                    <form method="POST" action="delete_post.php" style="display:inline;" onsubmit="return confirm('Delete this post? This cannot be undone.')">
+                        <input type="hidden" name="id" value="<?= $p['post_id'] ?>">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
                 </td>
             </tr>
         <?php endwhile; ?>
         </tbody>
     </table>
+    <?php endif; ?>
 </div>
 </body>
 </html>

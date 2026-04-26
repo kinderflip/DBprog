@@ -54,44 +54,53 @@ if ($r2Author) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reports</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
 <?php include '../includes/nav.php'; ?>
 <div class="container">
     <div class="page-header">
-        <h2>Reports</h2>
-        <a href="dashboard.php" class="btn btn-secondary">← Dashboard</a>
+        <h2>&#128202; Reports</h2>
+        <a href="dashboard.php" class="btn">&larr; Back to Dashboard</a>
     </div>
 
     <!-- REPORT 1 -->
-    <div style="background:#fff;border-radius:10px;padding:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,.07);margin-bottom:2rem;">
-        <h3 style="margin-bottom:1rem;">Report 1 — Most Popular Posts by Date Range</h3>
-        <p style="color:#666;font-size:0.88rem;margin-bottom:1rem;">Uses stored procedure <code>GetPopularContent(startDate, endDate)</code></p>
-        <form method="GET" style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;">
+    <div class="section-card">
+        <h3>Report 1 &mdash; Most Popular Posts by Date Range</h3>
+        <div class="callout">
+            Powered by stored procedure <code>GetPopularContent(startDate, endDate)</code>
+        </div>
+        <form method="GET" style="display:flex; gap:0.7rem; flex-wrap:wrap; align-items:end; margin-bottom:1.2rem;">
             <input type="hidden" name="r2author" value="<?= $r2Author ?>">
-            <label style="font-weight:600;font-size:0.9rem;">From:</label>
-            <input type="date" name="r1from" value="<?= htmlspecialchars($r1From) ?>" style="padding:0.4rem;border:1px solid #ccc;border-radius:6px;">
-            <label style="font-weight:600;font-size:0.9rem;">To:</label>
-            <input type="date" name="r1to" value="<?= htmlspecialchars($r1To) ?>" style="padding:0.4rem;border:1px solid #ccc;border-radius:6px;">
-            <button type="submit" class="btn btn-primary btn-sm">Generate</button>
+            <div class="form-group" style="margin-bottom:0;">
+                <label>From</label>
+                <input type="date" name="r1from" value="<?= htmlspecialchars($r1From) ?>">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label>To</label>
+                <input type="date" name="r1to" value="<?= htmlspecialchars($r1To) ?>">
+            </div>
+            <button type="submit" class="btn btn-primary">Generate</button>
         </form>
 
         <?php if ($r1From && $r1To): ?>
             <?php if (empty($report1)): ?>
-                <p style="color:#999;">No published posts in this date range.</p>
+                <div class="empty-state" style="padding:1.5rem;">No published posts in this date range.</div>
             <?php else: ?>
             <table class="data-table">
                 <thead><tr><th>Title</th><th>Author</th><th>Category</th><th>Avg Rating</th><th>Total Ratings</th><th>Date</th></tr></thead>
                 <tbody>
                 <?php foreach ($report1 as $r): ?>
                 <tr>
-                    <td><a href="../view_post.php?id=<?= $r['post_id'] ?>"><?= htmlspecialchars($r['title']) ?></a></td>
+                    <td><a href="../view_post.php?id=<?= $r['post_id'] ?>" style="font-weight:500;"><?= htmlspecialchars($r['title']) ?></a></td>
                     <td><?= htmlspecialchars($r['author']) ?></td>
-                    <td><?= htmlspecialchars($r['category'] ?? '—') ?></td>
-                    <td>⭐ <?= $r['avg_rating'] ?? '—' ?></td>
+                    <td><span class="badge"><?= htmlspecialchars($r['category'] ?? '—') ?></span></td>
+                    <td>&#11088; <strong><?= $r['avg_rating'] ?? '—' ?></strong></td>
                     <td><?= $r['total_ratings'] ?></td>
-                    <td><?= date('d M Y', strtotime($r['created_at'])) ?></td>
+                    <td style="color:var(--color-text-muted); font-size:0.85rem;"><?= date('d M Y', strtotime($r['created_at'])) ?></td>
                 </tr>
                 <?php endforeach; ?>
                 </tbody>
@@ -101,36 +110,44 @@ if ($r2Author) {
     </div>
 
     <!-- REPORT 2 -->
-    <div style="background:#fff;border-radius:10px;padding:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,.07);">
-        <h3 style="margin-bottom:1rem;">Report 2 — All Posts by a Specific Author</h3>
-        <form method="GET" style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;">
+    <div class="section-card">
+        <h3>Report 2 &mdash; All Posts by a Specific Author</h3>
+        <form method="GET" style="display:flex; gap:0.7rem; flex-wrap:wrap; align-items:end; margin-bottom:1.2rem;">
             <input type="hidden" name="r1from" value="<?= htmlspecialchars($r1From) ?>">
             <input type="hidden" name="r1to"   value="<?= htmlspecialchars($r1To) ?>">
-            <label style="font-weight:600;font-size:0.9rem;">Author:</label>
-            <select name="r2author" style="padding:0.4rem;border:1px solid #ccc;border-radius:6px;">
-                <option value="">— Select Author —</option>
-                <?php while ($a = mysqli_fetch_assoc($authors)): ?>
-                    <option value="<?= $a['uid'] ?>" <?= ($r2Author == $a['uid']) ? 'selected' : '' ?>><?= htmlspecialchars($a['username']) ?></option>
-                <?php endwhile; ?>
-            </select>
-            <button type="submit" class="btn btn-primary btn-sm">Generate</button>
+            <div class="form-group" style="margin-bottom:0; min-width:240px;">
+                <label>Author</label>
+                <select name="r2author">
+                    <option value="">— Select Author —</option>
+                    <?php while ($a = mysqli_fetch_assoc($authors)): ?>
+                        <option value="<?= $a['uid'] ?>" <?= ($r2Author == $a['uid']) ? 'selected' : '' ?>><?= htmlspecialchars($a['username']) ?></option>
+                    <?php endwhile; ?>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Generate</button>
         </form>
 
         <?php if ($r2Author): ?>
             <?php if (empty($report2)): ?>
-                <p style="color:#999;">This author has no posts.</p>
+                <div class="empty-state" style="padding:1.5rem;">This author has no posts.</div>
             <?php else: ?>
             <table class="data-table">
                 <thead><tr><th>Title</th><th>Category</th><th>Status</th><th>Avg Rating</th><th>Comments</th><th>Date</th></tr></thead>
                 <tbody>
                 <?php foreach ($report2 as $r): ?>
                 <tr>
-                    <td><a href="../view_post.php?id=<?= $r['post_id'] ?>"><?= htmlspecialchars($r['title']) ?></a></td>
-                    <td><?= htmlspecialchars($r['cat_name'] ?? '—') ?></td>
-                    <td><?= $r['published'] ? '<span style="color:green;">Live</span>' : '<span style="color:#999;">Draft</span>' ?></td>
-                    <td><?= $r['avg_rating'] ?? '—' ?></td>
+                    <td><a href="../view_post.php?id=<?= $r['post_id'] ?>" style="font-weight:500;"><?= htmlspecialchars($r['title']) ?></a></td>
+                    <td><span class="badge"><?= htmlspecialchars($r['cat_name'] ?? '—') ?></span></td>
+                    <td>
+                        <?php if ($r['published']): ?>
+                            <span class="status-pill status-published">Live</span>
+                        <?php else: ?>
+                            <span class="status-pill status-draft">Draft</span>
+                        <?php endif; ?>
+                    </td>
+                    <td>&#11088; <strong><?= $r['avg_rating'] ?? '—' ?></strong></td>
                     <td><?= $r['comments'] ?></td>
-                    <td><?= date('d M Y', strtotime($r['created_at'])) ?></td>
+                    <td style="color:var(--color-text-muted); font-size:0.85rem;"><?= date('d M Y', strtotime($r['created_at'])) ?></td>
                 </tr>
                 <?php endforeach; ?>
                 </tbody>

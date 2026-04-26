@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Title and content are required.';
     } else {
         // Handle image upload
-        $image_path = 'images/default.jpg';
+        $image_path = null;
         if (!empty($_FILES['image']['name'])) {
             $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
             if (in_array($ext, ['jpg','jpeg','png','gif','webp'])) {
@@ -64,53 +64,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>New Post</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/style.css">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 <body>
 <?php include '../includes/nav.php'; ?>
-<div class="container" style="max-width:750px;">
-    <h2 style="margin-bottom:1.2rem;">New Post</h2>
+<div class="container" style="max-width:800px;">
+    <div class="page-header">
+        <h2>&#9997; New Post</h2>
+        <a href="dashboard.php" class="btn">&larr; Back</a>
+    </div>
+
     <?php if ($error): ?><div class="alert alert-error"><?= htmlspecialchars($error) ?></div><?php endif; ?>
 
     <form id="postForm" method="POST" enctype="multipart/form-data">
-        <div class="form-group">
-            <label>Title *</label>
-            <input type="text" name="title" id="title" value="<?= htmlspecialchars($_POST['title'] ?? '') ?>">
-            <span class="field-error" id="err-title"></span>
+        <div class="section-card">
+            <h3>Content</h3>
+            <div class="form-group">
+                <label>Title *</label>
+                <input type="text" name="title" id="title" value="<?= htmlspecialchars($_POST['title'] ?? '') ?>" placeholder="Give your post a catchy title">
+                <span class="field-error" id="err-title"></span>
+            </div>
+            <div class="form-group">
+                <label>Short Description</label>
+                <input type="text" name="short_desc" value="<?= htmlspecialchars($_POST['short_desc'] ?? '') ?>" placeholder="A one-line summary shown in the feed">
+            </div>
+            <div class="form-group">
+                <label>Full Content *</label>
+                <textarea name="full_content" id="fullContent" style="min-height:220px;" placeholder="Write your post here..."><?= htmlspecialchars($_POST['full_content'] ?? '') ?></textarea>
+                <span class="field-error" id="err-content"></span>
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select name="cat_id">
+                    <option value="">— Select Category —</option>
+                    <?php while ($c = mysqli_fetch_assoc($cats)): ?>
+                        <option value="<?= $c['cat_id'] ?>" <?= (($_POST['cat_id'] ?? '') == $c['cat_id']) ? 'selected' : '' ?>><?= htmlspecialchars($c['cat_name']) ?></option>
+                    <?php endwhile; ?>
+                </select>
+            </div>
         </div>
-        <div class="form-group">
-            <label>Short Description</label>
-            <input type="text" name="short_desc" value="<?= htmlspecialchars($_POST['short_desc'] ?? '') ?>">
+
+        <div class="section-card">
+            <h3>Media &amp; Publishing</h3>
+            <div class="form-group">
+                <label>Thumbnail Image (jpg/png/gif/webp)</label>
+                <input type="file" name="image" accept="image/*">
+            </div>
+            <div class="form-group">
+                <label>PDF Attachment (optional)</label>
+                <input type="file" name="pdf" accept=".pdf">
+            </div>
+            <div class="form-group" style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0;">
+                <input type="checkbox" name="published" id="published" <?= isset($_POST['published']) ? 'checked' : '' ?> style="width:auto;">
+                <label for="published" style="font-weight:500; margin-bottom:0;">Publish immediately</label>
+            </div>
         </div>
-        <div class="form-group">
-            <label>Full Content *</label>
-            <textarea name="full_content" id="fullContent" style="min-height:200px;"><?= htmlspecialchars($_POST['full_content'] ?? '') ?></textarea>
-            <span class="field-error" id="err-content"></span>
+
+        <div style="margin-top:1.5rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
+            <a href="dashboard.php" class="btn">Cancel</a>
+            <button type="submit" class="btn btn-primary">Save Post</button>
         </div>
-        <div class="form-group">
-            <label>Category</label>
-            <select name="cat_id">
-                <option value="">— Select —</option>
-                <?php while ($c = mysqli_fetch_assoc($cats)): ?>
-                    <option value="<?= $c['cat_id'] ?>" <?= (($_POST['cat_id'] ?? '') == $c['cat_id']) ? 'selected' : '' ?>><?= htmlspecialchars($c['cat_name']) ?></option>
-                <?php endwhile; ?>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Thumbnail Image (jpg/png/gif/webp)</label>
-            <input type="file" name="image" accept="image/*">
-        </div>
-        <div class="form-group">
-            <label>PDF Attachment (optional)</label>
-            <input type="file" name="pdf" accept=".pdf">
-        </div>
-        <div class="form-group" style="display:flex;align-items:center;gap:0.5rem;">
-            <input type="checkbox" name="published" id="published" <?= isset($_POST['published']) ? 'checked' : '' ?> style="width:auto;">
-            <label for="published" style="font-weight:normal;">Publish immediately</label>
-        </div>
-        <button type="submit" class="btn btn-primary">Save Post</button>
-        <a href="dashboard.php" class="btn btn-secondary" style="margin-left:0.5rem;">Cancel</a>
     </form>
 </div>
 

@@ -53,6 +53,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Register — The Blog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
@@ -60,39 +63,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php include 'includes/nav.php'; ?>
 
 <div class="container form-page">
-    <h2>Create an Account</h2>
+    <div class="form-card">
+        <h2>Create an Account</h2>
 
-    <?php if ($error): ?>
-        <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
-    <?php endif; ?>
-    <?php if ($success): ?>
-        <div class="alert alert-success"><?= $success ?></div>
-    <?php endif; ?>
+        <?php if ($error): ?>
+            <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
+        <?php endif; ?>
+        <?php if ($success): ?>
+            <div class="alert alert-success"><?= $success ?></div>
+        <?php endif; ?>
 
-    <form id="registerForm" method="POST" action="register.php" novalidate>
-        <div class="form-group">
-            <label>Username</label>
-            <input type="text" name="username" id="username" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>">
-            <span class="field-error" id="err-username"></span>
-        </div>
-        <div class="form-group">
-            <label>Email</label>
-            <input type="email" name="email" id="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
-            <span class="field-error" id="err-email"></span>
-        </div>
-        <div class="form-group">
-            <label>Password</label>
-            <input type="password" name="password" id="password">
-            <span class="field-error" id="err-password"></span>
-        </div>
-        <div class="form-group">
-            <label>Confirm Password</label>
-            <input type="password" name="confirm" id="confirm">
-            <span class="field-error" id="err-confirm"></span>
-        </div>
-        <button type="submit" class="btn btn-primary">Register</button>
-        <p class="form-footer">Already have an account? <a href="login.php">Log in</a></p>
-    </form>
+        <form id="registerForm" method="POST" action="register.php" novalidate>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" name="username" id="username" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" placeholder="Choose a username">
+                <span class="field-error" id="err-username"></span>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" id="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" placeholder="you@example.com">
+                <span class="field-error" id="err-email"></span>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" id="password" placeholder="At least 6 characters">
+                <span class="field-error" id="err-password"></span>
+            </div>
+            <div class="form-group">
+                <label>Confirm Password</label>
+                <input type="password" name="confirm" id="confirm" placeholder="Repeat your password">
+                <span class="field-error" id="err-confirm"></span>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;">Create Account</button>
+            <p class="form-footer">Already have an account? <a href="login.php">Log in</a></p>
+        </form>
+    </div>
 </div>
 
 <script>

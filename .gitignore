@@ -3,6 +3,7 @@ IT8415_Blog/uploads/*
 !IT8415_Blog/uploads/.gitkeep
 IT8415_Blog/images/*
 !IT8415_Blog/images/.gitkeep
+!IT8415_Blog/images/no-image.png
 
 # Archives and compiled files
 *.rar

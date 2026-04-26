@@ -80,6 +80,9 @@ if ($query || $dateFrom || $dateTo || $authorId) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Search — The Blog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
@@ -87,51 +90,87 @@ if ($query || $dateFrom || $dateTo || $authorId) {
 <?php include 'includes/nav.php'; ?>
 
 <div class="container">
-    <h2 style="margin-bottom:1.2rem;">Search Posts</h2>
+    <div class="hero-header">
+        <div>
+            <h2>Search Posts</h2>
+            <p>Find posts by keyword, date, author, or popularity</p>
+        </div>
+    </div>
 
-    <form method="GET" action="search.php" class="search-bar" id="searchForm">
-        <input type="text" name="q" placeholder="Search by title or content..." value="<?= htmlspecialchars($query) ?>">
-        <input type="date" name="from" value="<?= htmlspecialchars($dateFrom) ?>" title="From date">
-        <input type="date" name="to"   value="<?= htmlspecialchars($dateTo) ?>"   title="To date">
-        <select name="author">
-            <option value="">All Authors</option>
-            <?php mysqli_data_seek($authors, 0); while ($a = mysqli_fetch_assoc($authors)): ?>
-                <option value="<?= $a['uid'] ?>" <?= ($authorId == $a['uid']) ? 'selected' : '' ?>><?= htmlspecialchars($a['username']) ?></option>
-            <?php endwhile; ?>
-        </select>
-        <select name="sort">
-            <option value="newest"  <?= ($sortBy === 'newest')  ? 'selected' : '' ?>>Newest First</option>
-            <option value="popular" <?= ($sortBy === 'popular') ? 'selected' : '' ?>>Most Popular</option>
-        </select>
-        <button type="submit" class="btn btn-primary">Search</button>
-    </form>
+    <div class="section-card" style="margin-bottom:1.5rem;">
+        <form method="GET" action="search.php" id="searchForm" class="search-bar">
+            <div class="form-group">
+                <label>Keyword</label>
+                <input type="text" name="q" placeholder="Search by title or content..." value="<?= htmlspecialchars($query) ?>">
+            </div>
+            <div class="form-group">
+                <label>From</label>
+                <input type="date" name="from" value="<?= htmlspecialchars($dateFrom) ?>">
+            </div>
+            <div class="form-group">
+                <label>To</label>
+                <input type="date" name="to" value="<?= htmlspecialchars($dateTo) ?>">
+            </div>
+            <div class="form-group">
+                <label>Author</label>
+                <select name="author">
+                    <option value="">All Authors</option>
+                    <?php mysqli_data_seek($authors, 0); while ($a = mysqli_fetch_assoc($authors)): ?>
+                        <option value="<?= $a['uid'] ?>" <?= ($authorId == $a['uid']) ? 'selected' : '' ?>><?= htmlspecialchars($a['username']) ?></option>
+                    <?php endwhile; ?>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Sort</label>
+                <select name="sort">
+                    <option value="newest"  <?= ($sortBy === 'newest')  ? 'selected' : '' ?>>Newest First</option>
+                    <option value="popular" <?= ($sortBy === 'popular') ? 'selected' : '' ?>>Most Popular</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
 
     <?php if ($searched): ?>
-        <p style="margin-bottom:1rem;color:#666;"><?= count($posts) ?> result(s) found.</p>
+        <p style="margin-bottom:1.2rem; color:var(--color-text-muted); font-size:0.9rem;"><?= count($posts) ?> result(s) found.</p>
         <?php if (empty($posts)): ?>
-            <div class="alert alert-error">No posts matched your search.</div>
+            <div class="empty-state">
+                <div class="icon">&#128269;</div>
+                <p style="font-size:1rem;">No posts matched your search.</p>
+                <p style="font-size:0.85rem;">Try different keywords or remove some filters.</p>
+            </div>
         <?php else: ?>
         <div class="posts-grid">
             <?php foreach ($posts as $post): ?>
             <div class="post-card">
-                <img src="<?= htmlspecialchars($post['image_path'] ?: 'images/default.jpg') ?>" alt="">
+                <?php $img = (!empty($post['image_path']) && file_exists($post['image_path'])) ? $post['image_path'] : 'images/no-image.png'; ?>
+                <a href="view_post.php?id=<?= $post['post_id'] ?>" class="post-card-img-wrap">
+                    <img src="<?= htmlspecialchars($img) ?>" alt="">
+                </a>
                 <div class="post-card-body">
+                    <div style="margin-bottom:0.5rem;">
+                        <span class="badge"><?= htmlspecialchars($post['category'] ?? '—') ?></span>
+                    </div>
                     <h3><a href="view_post.php?id=<?= $post['post_id'] ?>"><?= htmlspecialchars($post['title']) ?></a></h3>
                     <p><?= htmlspecialchars(mb_strimwidth($post['short_desc'], 0, 110, '...')) ?></p>
                     <div class="post-meta">
-                        <span class="badge"><?= htmlspecialchars($post['category'] ?? '—') ?></span>
-                        <span>⭐ <?= $post['avg_rating'] ?? '—' ?></span>
+                        <span>By <strong style="color:var(--color-text);"><?= htmlspecialchars($post['author']) ?></strong></span>
+                        <span>&#11088; <?= $post['avg_rating'] ?? '—' ?></span>
                     </div>
-                    <div class="post-meta" style="margin-top:5px;">
-                        <span>By <?= htmlspecialchars($post['author']) ?></span>
+                    <div class="post-meta" style="margin-top:0.3rem;">
                         <span><?= date('d M Y', strtotime($post['created_at'])) ?></span>
                     </div>
-                    <a href="view_post.php?id=<?= $post['post_id'] ?>" class="btn btn-primary btn-sm" style="margin-top:0.7rem;">View More</a>
+                    <a href="view_post.php?id=<?= $post['post_id'] ?>" class="btn btn-primary btn-sm" style="margin-top:0.9rem;">Read More &rarr;</a>
                 </div>
             </div>
             <?php endforeach; ?>
         </div>
         <?php endif; ?>
+    <?php else: ?>
+        <div class="empty-state">
+            <div class="icon">&#128269;</div>
+            <p style="font-size:1rem;">Use the form above to search posts.</p>
+        </div>
     <?php endif; ?>
 </div>
 </body>
