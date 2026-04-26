@@ -158,6 +158,36 @@ if ($allCatsResult) while ($cr = mysqli_fetch_assoc($allCatsResult)) $allCats[] 
         <?php endif; ?>
     </div>
     <?php endif; ?>
+
+    <?php if ($page === 1 && !$catFilter): ?>
+    <!-- Why Choose Us — feature highlights -->
+    <div class="features-section">
+        <h3>Why Choose The Blog?</h3>
+        <p class="features-subtitle">Built with modern web technology and a focus on the reader experience</p>
+        <div class="features-grid">
+            <div class="feature-card">
+                <span class="feature-icon">&#128269;</span>
+                <h4>Powerful Search</h4>
+                <p>FULLTEXT-indexed search across titles and content. Filter by date, author, or popularity.</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">&#11088;</span>
+                <h4>Star Ratings</h4>
+                <p>Rate posts 1&ndash;5 stars with instant AJAX updates &mdash; no page reload required.</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">&#128172;</span>
+                <h4>Live Comments</h4>
+                <p>Leave comments on any post and join the discussion. Admins keep things tidy.</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">&#128241;</span>
+                <h4>Mobile Friendly</h4>
+                <p>Fully responsive layout that adapts to your phone, tablet, or desktop screen.</p>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
 </div>
 </body>
 </html>
