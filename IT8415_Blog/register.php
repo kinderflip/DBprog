@@ -15,6 +15,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email    = trim($_POST['email']    ?? '');
     $password =       $_POST['password'] ?? '';
     $confirm  =       $_POST['confirm']  ?? '';
+    $role     =       $_POST['role']     ?? 'viewer';
+
+    // Whitelist role — never trust user input. Only viewer/creator allowed at signup.
+    if (!in_array($role, ['viewer', 'creator'], true)) {
+        $role = 'viewer';
+    }
 
     // Server-side validation
     if (!$username || !$email || !$password || !$confirm) {
@@ -36,8 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'An account with this email already exists.';
         } else {
             $hashed = password_hash($password, PASSWORD_DEFAULT);
-            $stmt2 = mysqli_prepare($conn, "INSERT INTO dbProj_users (username, email, password, role) VALUES (?, ?, ?, 'viewer')");
-            mysqli_stmt_bind_param($stmt2, 'sss', $username, $email, $hashed);
+            $stmt2 = mysqli_prepare($conn, "INSERT INTO dbProj_users (username, email, password, role) VALUES (?, ?, ?, ?)");
+            mysqli_stmt_bind_param($stmt2, 'ssss', $username, $email, $hashed, $role);
             if (mysqli_stmt_execute($stmt2)) {
                 $success = 'Account created! <a href="login.php">Log in now</a>.';
             } else {
@@ -93,6 +99,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label>Confirm Password</label>
                 <input type="password" name="confirm" id="confirm" placeholder="Repeat your password">
                 <span class="field-error" id="err-confirm"></span>
+            </div>
+            <div class="form-group">
+                <label>I want to join as</label>
+                <select name="role" id="role">
+                    <option value="viewer"  <?= (($_POST['role'] ?? 'viewer') === 'viewer')  ? 'selected' : '' ?>>&#128218; Reader &mdash; I want to read and rate posts</option>
+                    <option value="creator" <?= (($_POST['role'] ?? '') === 'creator') ? 'selected' : '' ?>>&#9997; Writer &mdash; I want to publish my own posts</option>
+                </select>
+                <p style="font-size:0.78rem; color:var(--color-text-muted); margin-top:0.3rem;">You can be promoted to admin only by an existing administrator.</p>
             </div>
             <button type="submit" class="btn btn-primary" style="width:100%;">Create Account</button>
             <p class="form-footer">Already have an account? <a href="login.php">Log in</a></p>
