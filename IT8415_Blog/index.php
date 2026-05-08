@@ -85,7 +85,6 @@ if ($allCatsResult) while ($cr = mysqli_fetch_assoc($allCatsResult)) $allCats[] 
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 <body>
 <?php include 'includes/nav.php'; ?>
@@ -114,7 +113,7 @@ if ($allCatsResult) while ($cr = mysqli_fetch_assoc($allCatsResult)) $allCats[] 
     <div class="posts-grid">
     <?php while ($post = mysqli_fetch_assoc($posts)): ?>
         <div class="post-card">
-            <?php $img = (!empty($post['image_path']) && file_exists($post['image_path'])) ? $post['image_path'] : 'images/no-image.png'; ?>
+            <?php $img = (!empty($post['image_path']) && file_exists(__DIR__ . '/' . $post['image_path'])) ? $post['image_path'] : 'images/no-image.png'; ?>
             <a href="view_post.php?id=<?= $post['post_id'] ?>" class="post-card-img-wrap">
                 <img src="<?= htmlspecialchars($img) ?>" alt="Post Image">
             </a>

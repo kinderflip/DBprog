@@ -35,23 +35,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$title || !$content) {
         $error = 'Title and content are required.';
     } else {
+        // Replace image only if upload actually succeeded; otherwise keep existing
         $image_path = $post['image_path'];
-        if (!empty($_FILES['image']['name'])) {
+        if (!empty($_FILES['image']['name']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
             $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
             if (in_array($ext, ['jpg','jpeg','png','gif','webp'])) {
                 $filename = 'img_' . time() . '_' . rand(100,999) . '.' . $ext;
-                move_uploaded_file($_FILES['image']['tmp_name'], '../images/' . $filename);
-                $image_path = 'images/' . $filename;
+                $destPath = __DIR__ . '/../images/' . $filename;
+                if (move_uploaded_file($_FILES['image']['tmp_name'], $destPath)) {
+                    $image_path = 'images/' . $filename;
+                }
             }
         }
 
         $pdf_path = $post['pdf_path'];
-        if (!empty($_FILES['pdf']['name'])) {
+        if (!empty($_FILES['pdf']['name']) && $_FILES['pdf']['error'] === UPLOAD_ERR_OK) {
             $ext = strtolower(pathinfo($_FILES['pdf']['name'], PATHINFO_EXTENSION));
             if ($ext === 'pdf') {
                 $pdfname = 'pdf_' . time() . '_' . rand(100,999) . '.pdf';
-                move_uploaded_file($_FILES['pdf']['tmp_name'], '../uploads/' . $pdfname);
-                $pdf_path = 'uploads/' . $pdfname;
+                $destPath = __DIR__ . '/../uploads/' . $pdfname;
+                if (move_uploaded_file($_FILES['pdf']['tmp_name'], $destPath)) {
+                    $pdf_path = 'uploads/' . $pdfname;
+                }
             }
         }
 
@@ -70,8 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$thumbExists = !empty($post['image_path']) && file_exists('../' . $post['image_path']);
-$pdfExists   = !empty($post['pdf_path'])   && file_exists('../' . $post['pdf_path']);
+$thumbExists = !empty($post['image_path']) && file_exists(__DIR__ . '/../' . $post['image_path']);
+$pdfExists   = !empty($post['pdf_path'])   && file_exists(__DIR__ . '/../' . $post['pdf_path']);
 ?>
 <!DOCTYPE html>
 <html lang="en">

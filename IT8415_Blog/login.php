@@ -23,6 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user   = mysqli_fetch_assoc($result);
 
         if ($user && password_verify($password, $user['password'])) {
+            // Regenerate session ID to prevent session fixation attacks
+            session_regenerate_id(true);
             $_SESSION['uid']      = $user['uid'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['role']     = $user['role'];

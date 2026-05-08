@@ -17,7 +17,9 @@ if (!$comment_id) { echo json_encode(['success' => false]); exit; }
 
 $stmt = mysqli_prepare($conn, "DELETE FROM dbProj_comments WHERE comment_id = ?");
 mysqli_stmt_bind_param($stmt, 'i', $comment_id);
-$ok = mysqli_stmt_execute($stmt);
+mysqli_stmt_execute($stmt);
 
-echo json_encode(['success' => $ok]);
+// Only treat as success if a row was actually deleted
+$affected = mysqli_stmt_affected_rows($stmt);
+echo json_encode(['success' => $affected > 0]);
 ?>

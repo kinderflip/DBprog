@@ -23,7 +23,36 @@ $stmt = mysqli_prepare($conn, "
 mysqli_stmt_bind_param($stmt, 'i', $post_id);
 mysqli_stmt_execute($stmt);
 $post = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
-if (!$post) { echo '<p>Post not found.</p>'; exit; }
+
+if (!$post) {
+    // Render a proper styled 404 page with nav and layout
+    ?>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Not Found &mdash; The Blog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    </head>
+    <body>
+    <?php include 'includes/nav.php'; ?>
+    <div class="container">
+        <div class="empty-state" style="padding: 4rem 1rem;">
+            <div class="icon" style="font-size: 4rem;">&#128270;</div>
+            <h2 style="margin-bottom: 0.5rem;">Post Not Found</h2>
+            <p style="font-size: 1rem; margin-bottom: 1.5rem;">The post you are looking for does not exist or has been removed.</p>
+            <a href="index.php" class="btn btn-primary">&larr; Back to Home</a>
+        </div>
+    </div>
+    </body>
+    </html>
+    <?php
+    exit;
+}
 
 // Current user's rating (if logged in)
 $userRating = 0;
@@ -81,7 +110,7 @@ $comments = mysqli_stmt_get_result($cFetch);
 
 <div class="container">
     <div class="post-detail">
-        <?php if (!empty($post['image_path']) && file_exists($post['image_path'])): ?>
+        <?php if (!empty($post['image_path']) && file_exists(__DIR__ . '/' . $post['image_path'])): ?>
             <img class="post-hero-img" src="<?= htmlspecialchars($post['image_path']) ?>" alt="Post Image">
         <?php endif; ?>
 
