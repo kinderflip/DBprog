@@ -5,6 +5,7 @@ requireRole('admin');
 
 // Handle role change
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['uid'], $_POST['role'])) {
+    requireCsrf();
     $targetUid = (int)$_POST['uid'];
     $newRole   = $_POST['role'];
     if (in_array($newRole, ['admin','creator','viewer'])) {
@@ -18,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['uid'], $_POST['role']
 
 // Handle delete
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete'])) {
+    requireCsrf();
     $del = (int)$_POST['delete'];
     if ($del !== $_SESSION['uid']) { // prevent self-delete
         $stmt = mysqli_prepare($conn, "DELETE FROM dbProj_users WHERE uid = ?");
@@ -66,6 +68,7 @@ $users = mysqli_query($conn, "SELECT * FROM dbProj_users ORDER BY created_at DES
             <td style="color:var(--color-text-muted);"><?= htmlspecialchars($u['email']) ?></td>
             <td>
                 <form method="POST" style="display:inline;">
+                    <?= csrf_input() ?>
                     <input type="hidden" name="uid" value="<?= $u['uid'] ?>">
                     <select name="role" onchange="this.form.submit()" class="status-pill role-<?= $u['role'] ?>" style="border:none; cursor:pointer; padding:0.25rem 0.6rem; appearance:none; -webkit-appearance:none; background-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236b7280' stroke-width='1.5' fill='none'/%3E%3C/svg%3E&quot;); background-repeat:no-repeat; background-position:right 0.4rem center; padding-right:1.4rem;">
                         <option value="viewer"  <?= $u['role']==='viewer'  ? 'selected':'' ?>>Viewer</option>
@@ -78,6 +81,7 @@ $users = mysqli_query($conn, "SELECT * FROM dbProj_users ORDER BY created_at DES
             <td style="text-align:right;">
                 <?php if ($u['uid'] !== $_SESSION['uid']): ?>
                     <form method="POST" action="manage_users.php" style="display:inline;" onsubmit="return confirm('Delete this user? This cannot be undone.')">
+                        <?= csrf_input() ?>
                         <input type="hidden" name="delete" value="<?= $u['uid'] ?>">
                         <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                     </form>

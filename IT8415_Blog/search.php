@@ -28,16 +28,21 @@ if ($query || $dateFrom || $dateTo || $authorId) {
         LEFT JOIN dbProj_users      u ON p.uid    = u.uid
         LEFT JOIN dbProj_categories c ON p.cat_id = c.cat_id
         LEFT JOIN dbProj_ratings    r ON p.post_id = r.post_id
-        WHERE p.published = 1
+        WHERE p.published = 1 AND p.is_deleted = 0
     ";
 
     $params = [];
     $types  = '';
 
     if ($query) {
-        $sql .= " AND MATCH(p.title, p.full_content) AGAINST(? IN BOOLEAN MODE)";
-        $params[] = $query . '*';
-        $types   .= 's';
+        // Strip BOOLEAN MODE operators so users can't change query behavior with +, -, ~, *, ", etc.
+        $safeQuery = preg_replace('/[+\-~<>()"@*]/', ' ', $query);
+        $safeQuery = trim(preg_replace('/\s+/', ' ', $safeQuery));
+        if ($safeQuery !== '') {
+            $sql .= " AND MATCH(p.title, p.full_content) AGAINST(? IN BOOLEAN MODE)";
+            $params[] = $safeQuery . '*';
+            $types   .= 's';
+        }
     }
     if ($dateFrom) {
         $sql .= " AND DATE(p.created_at) >= ?";

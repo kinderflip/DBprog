@@ -1,9 +1,11 @@
-# Uploaded user files (keep directory structure)
+# Uploaded user files (keep directory structure + security files)
 IT8415_Blog/uploads/*
 !IT8415_Blog/uploads/.gitkeep
+!IT8415_Blog/uploads/.htaccess
 IT8415_Blog/images/*
 !IT8415_Blog/images/.gitkeep
 !IT8415_Blog/images/no-image.png
+!IT8415_Blog/images/.htaccess
 
 # Archives and compiled files
 *.rar

@@ -7,6 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: dashboard.php');
     exit;
 }
+requireCsrf();
 
 $post_id = (int)($_POST['id'] ?? 0);
 $uid     = $_SESSION['uid'];

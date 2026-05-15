@@ -11,6 +11,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 }
 
 require_once '../DBConn.php';
+requireCsrfAjax();
 
 $comment_id = (int)($_POST['comment_id'] ?? 0);
 if (!$comment_id) { echo json_encode(['success' => false]); exit; }

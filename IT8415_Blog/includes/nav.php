@@ -1,14 +1,21 @@
 <?php if (session_status() === PHP_SESSION_NONE) session_start(); ?>
 <?php
-// Fetch categories for nav dropdown
-$_navCats = [];
-if (isset($conn)) {
-    $_navCatResult = mysqli_query($conn, "SELECT cat_id, cat_name FROM dbProj_categories ORDER BY cat_name");
-    if ($_navCatResult) {
-        while ($_navCatRow = mysqli_fetch_assoc($_navCatResult)) {
-            $_navCats[] = $_navCatRow;
+// Fetch categories for nav dropdown — cache in session for 5 minutes
+// so we don't query the DB on every page render.
+$_navCats = $_SESSION['nav_cats_cache'] ?? null;
+$_navCatsExpiry = $_SESSION['nav_cats_expiry'] ?? 0;
+if (!is_array($_navCats) || time() > $_navCatsExpiry) {
+    $_navCats = [];
+    if (isset($conn)) {
+        $_navCatResult = mysqli_query($conn, "SELECT cat_id, cat_name FROM dbProj_categories ORDER BY cat_name");
+        if ($_navCatResult) {
+            while ($_navCatRow = mysqli_fetch_assoc($_navCatResult)) {
+                $_navCats[] = $_navCatRow;
+            }
         }
     }
+    $_SESSION['nav_cats_cache']  = $_navCats;
+    $_SESSION['nav_cats_expiry'] = time() + 300; // 5 minutes
 }
 // Active page detection
 $_navCurrent = basename($_SERVER['PHP_SELF']);

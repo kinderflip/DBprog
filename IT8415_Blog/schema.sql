@@ -39,9 +39,14 @@ CREATE TABLE IF NOT EXISTS dbProj_posts (
     cat_id      INT,
     uid         INT,
     published   TINYINT(1) DEFAULT 0,
+    is_deleted  TINYINT(1) NOT NULL DEFAULT 0,
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (cat_id) REFERENCES dbProj_categories(cat_id) ON DELETE SET NULL,
-    FOREIGN KEY (uid)    REFERENCES dbProj_users(uid)          ON DELETE CASCADE
+    FOREIGN KEY (uid)    REFERENCES dbProj_users(uid)          ON DELETE CASCADE,
+    INDEX idx_cat_id      (cat_id),
+    INDEX idx_uid         (uid),
+    INDEX idx_created_at  (created_at),
+    INDEX idx_published   (published)
 );
 
 -- FULLTEXT index for search (title + content)
@@ -96,6 +101,7 @@ BEGIN
     LEFT JOIN dbProj_categories c ON p.cat_id = c.cat_id
     LEFT JOIN dbProj_ratings    r ON p.post_id = r.post_id
     WHERE p.published = 1
+      AND p.is_deleted = 0
       AND DATE(p.created_at) BETWEEN startDate AND endDate
     GROUP BY p.post_id
     ORDER BY avg_rating DESC, total_ratings DESC;

@@ -75,6 +75,7 @@ $posts = mysqli_stmt_get_result($stmt);
                 <td style="text-align:right;">
                     <a href="edit_post.php?id=<?= $p['post_id'] ?>" class="btn btn-sm">Edit</a>
                     <form method="POST" action="delete_post.php" style="display:inline;" onsubmit="return confirm('Delete this post? This cannot be undone.')">
+                        <?= csrf_input() ?>
                         <input type="hidden" name="id" value="<?= $p['post_id'] ?>">
                         <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                     </form>

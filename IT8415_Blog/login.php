@@ -10,6 +10,7 @@ require_once 'DBConn.php';
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireCsrf();
     $email    = trim($_POST['email']    ?? '');
     $password =       $_POST['password'] ?? '';
 
@@ -60,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <form id="loginForm" method="POST" action="login.php" novalidate>
+            <?= csrf_input() ?>
             <div class="form-group">
                 <label>Email</label>
                 <input type="email" name="email" id="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" placeholder="you@example.com">

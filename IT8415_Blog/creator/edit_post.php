@@ -26,6 +26,7 @@ $cats  = mysqli_query($conn, "SELECT * FROM dbProj_categories ORDER BY cat_name"
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireCsrf();
     $title     = trim($_POST['title']        ?? '');
     $short     = trim($_POST['short_desc']   ?? '');
     $content   = trim($_POST['full_content'] ?? '');
@@ -35,42 +36,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$title || !$content) {
         $error = 'Title and content are required.';
     } else {
-        // Replace image only if upload actually succeeded; otherwise keep existing
+        // Replace image only if upload validates AND succeeds; otherwise keep existing
         $image_path = $post['image_path'];
         if (!empty($_FILES['image']['name']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
             $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
-            if (in_array($ext, ['jpg','jpeg','png','gif','webp'])) {
+            if (in_array($ext, ['jpg','jpeg','png','gif','webp']) && validateUpload($_FILES['image'], 'image')) {
                 $filename = 'img_' . time() . '_' . rand(100,999) . '.' . $ext;
                 $destPath = __DIR__ . '/../images/' . $filename;
                 if (move_uploaded_file($_FILES['image']['tmp_name'], $destPath)) {
                     $image_path = 'images/' . $filename;
                 }
+            } else {
+                $error = 'Invalid image file. Only real JPG, PNG, GIF, or WebP images are accepted.';
             }
         }
 
         $pdf_path = $post['pdf_path'];
-        if (!empty($_FILES['pdf']['name']) && $_FILES['pdf']['error'] === UPLOAD_ERR_OK) {
+        if (!$error && !empty($_FILES['pdf']['name']) && $_FILES['pdf']['error'] === UPLOAD_ERR_OK) {
             $ext = strtolower(pathinfo($_FILES['pdf']['name'], PATHINFO_EXTENSION));
-            if ($ext === 'pdf') {
+            if ($ext === 'pdf' && validateUpload($_FILES['pdf'], 'pdf')) {
                 $pdfname = 'pdf_' . time() . '_' . rand(100,999) . '.pdf';
                 $destPath = __DIR__ . '/../uploads/' . $pdfname;
                 if (move_uploaded_file($_FILES['pdf']['tmp_name'], $destPath)) {
                     $pdf_path = 'uploads/' . $pdfname;
                 }
+            } else {
+                $error = 'Invalid PDF file.';
             }
         }
 
-        $upd = mysqli_prepare($conn, "
-            UPDATE dbProj_posts
-            SET title=?, short_desc=?, full_content=?, image_path=?, pdf_path=?, cat_id=?, published=?
-            WHERE post_id=?
-        ");
-        mysqli_stmt_bind_param($upd, 'sssssiii', $title, $short, $content, $image_path, $pdf_path, $cat_id, $published, $post_id);
-        if (mysqli_stmt_execute($upd)) {
-            header('Location: dashboard.php');
-            exit;
-        } else {
-            $error = 'Update failed.';
+        if (!$error) {
+            $upd = mysqli_prepare($conn, "
+                UPDATE dbProj_posts
+                SET title=?, short_desc=?, full_content=?, image_path=?, pdf_path=?, cat_id=?, published=?
+                WHERE post_id=?
+            ");
+            mysqli_stmt_bind_param($upd, 'sssssiii', $title, $short, $content, $image_path, $pdf_path, $cat_id, $published, $post_id);
+            if (mysqli_stmt_execute($upd)) {
+                header('Location: dashboard.php');
+                exit;
+            } else {
+                $error = 'Update failed.';
+            }
         }
     }
 }
@@ -101,6 +108,7 @@ $pdfExists   = !empty($post['pdf_path'])   && file_exists(__DIR__ . '/../' . $po
     <?php if ($error): ?><div class="alert alert-error"><?= htmlspecialchars($error) ?></div><?php endif; ?>
 
     <form id="editForm" method="POST" enctype="multipart/form-data">
+        <?= csrf_input() ?>
         <input type="hidden" name="post_id" value="<?= $post_id ?>">
 
         <div class="section-card">

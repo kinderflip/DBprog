@@ -1,0 +1,27 @@
+# IT8415 Blog — Block PHP execution in uploads/ directory
+# Prevents any uploaded file from being executed as PHP.
+
+<FilesMatch "\.(php|php3|php4|php5|php7|phtml|phar|pl|py|cgi|sh)$">
+    Order Deny,Allow
+    Deny from all
+    Require all denied
+</FilesMatch>
+
+# Disable PHP handler entirely
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php8.c>
+    php_flag engine off
+</IfModule>
+
+# Force browser download for PDFs (prevents inline-PDF browser exploits)
+<FilesMatch "\.pdf$">
+    Header set Content-Disposition "attachment"
+</FilesMatch>
+
+# Set safe default content type for non-PDF files
+AddType text/plain .php .phtml .php3 .php4 .php5 .php7 .phar .pl .py

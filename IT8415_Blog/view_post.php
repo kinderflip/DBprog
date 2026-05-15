@@ -17,7 +17,7 @@ $stmt = mysqli_prepare($conn, "
     LEFT JOIN dbProj_users      u ON p.uid    = u.uid
     LEFT JOIN dbProj_categories c ON p.cat_id = c.cat_id
     LEFT JOIN dbProj_ratings    r ON p.post_id = r.post_id
-    WHERE p.post_id = ? AND p.published = 1
+    WHERE p.post_id = ? AND p.published = 1 AND p.is_deleted = 0
     GROUP BY p.post_id
 ");
 mysqli_stmt_bind_param($stmt, 'i', $post_id);
@@ -67,6 +67,7 @@ if (isset($_SESSION['uid'])) {
 // Handle comment submission
 $commentError = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['uid'])) {
+    requireCsrf();
     $text = trim($_POST['comment_text'] ?? '');
     if (!$text) {
         $commentError = 'Comment cannot be empty.';
@@ -99,6 +100,7 @@ $comments = mysqli_stmt_get_result($cFetch);
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= htmlspecialchars($post['title']) ?> — The Blog</title>
+<meta name="csrf-token" content="<?= htmlspecialchars(csrf_token()) ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -199,6 +201,7 @@ $comments = mysqli_stmt_get_result($cFetch);
                 <div class="alert alert-error"><?= htmlspecialchars($commentError) ?></div>
             <?php endif; ?>
             <form id="commentForm" method="POST" action="view_post.php?id=<?= $post_id ?>">
+                <?= csrf_input() ?>
                 <div class="form-group">
                     <textarea name="comment_text" id="commentText" maxlength="1000" placeholder="Write your comment..."></textarea>
                     <div class="char-counter"><span id="charCount">0</span>/1000</div>
@@ -213,6 +216,9 @@ $comments = mysqli_stmt_get_result($cFetch);
 </div>
 
 <script>
+// Read CSRF token from meta tag — sent with every AJAX POST
+const csrfToken = $('meta[name="csrf-token"]').attr('content');
+
 // ---- Star rating via jQuery AJAX ----
 <?php if (isset($_SESSION['uid'])): ?>
 $('.star').on('mouseover', function() {
@@ -229,7 +235,7 @@ $('.star').on('mouseover', function() {
     $.ajax({
         url: 'ajax/rate.php',
         method: 'POST',
-        data: { post_id: post_id, rating: rating },
+        data: { post_id: post_id, rating: rating, csrf_token: csrfToken },
         dataType: 'json',
         success: function(res) {
             if (res.success) {
@@ -258,7 +264,7 @@ $('.delete-comment').on('click', function() {
     $.ajax({
         url: 'ajax/delete_comment.php',
         method: 'POST',
-        data: { comment_id: id },
+        data: { comment_id: id, csrf_token: csrfToken },
         dataType: 'json',
         success: function(res) {
             if (res.success) {

@@ -3,11 +3,11 @@ session_start();
 require_once '../DBConn.php';
 requireRole('admin');
 
-// Handle delete — show system message instead of removing row visually
+// Handle delete — soft-delete via is_deleted column (system message shown in admin view)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete'])) {
+    requireCsrf();
     $pid = (int)$_POST['delete'];
-    // Mark as unpublished and set a deleted flag via title prefix (shows system message)
-    $stmt = mysqli_prepare($conn, "UPDATE dbProj_posts SET published=0, title=CONCAT('[REMOVED] ', title) WHERE post_id=?");
+    $stmt = mysqli_prepare($conn, "UPDATE dbProj_posts SET published = 0, is_deleted = 1 WHERE post_id = ?");
     mysqli_stmt_bind_param($stmt, 'i', $pid);
     mysqli_stmt_execute($stmt);
     header('Location: manage_posts.php');
@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete'])) {
 }
 
 $posts = mysqli_query($conn, "
-    SELECT p.post_id, p.title, p.published, p.created_at,
+    SELECT p.post_id, p.title, p.published, p.is_deleted, p.created_at,
            u.username AS author, c.cat_name
     FROM dbProj_posts p
     LEFT JOIN dbProj_users      u ON p.uid    = u.uid
@@ -60,7 +60,7 @@ $posts = mysqli_query($conn, "
             </td>
             <td><span class="badge"><?= htmlspecialchars($p['cat_name'] ?? '—') ?></span></td>
             <td>
-                <?php if (str_starts_with($p['title'], '[REMOVED]')): ?>
+                <?php if ($p['is_deleted']): ?>
                     <span class="status-pill status-removed">Removed</span>
                 <?php elseif ($p['published']): ?>
                     <span class="status-pill status-live">Live</span>
@@ -71,8 +71,9 @@ $posts = mysqli_query($conn, "
             <td style="color:var(--color-text-muted); font-size:0.85rem;"><?= date('d M Y', strtotime($p['created_at'])) ?></td>
             <td style="text-align:right;">
                 <a href="../creator/edit_post.php?id=<?= $p['post_id'] ?>" class="btn btn-sm">Edit</a>
-                <?php if (!str_starts_with($p['title'], '[REMOVED]')): ?>
+                <?php if (!$p['is_deleted']): ?>
                     <form method="POST" action="manage_posts.php" style="display:inline;" onsubmit="return confirm('Remove this post? A system message will be shown in its place.')">
+                        <?= csrf_input() ?>
                         <input type="hidden" name="delete" value="<?= $p['post_id'] ?>">
                         <button type="submit" class="btn btn-danger btn-sm">Remove</button>
                     </form>

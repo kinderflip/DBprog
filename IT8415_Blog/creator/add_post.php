@@ -12,6 +12,7 @@ $error = '';
 $cats = mysqli_query($conn, "SELECT * FROM dbProj_categories ORDER BY cat_name");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireCsrf();
     $title     = trim($_POST['title']      ?? '');
     $short     = trim($_POST['short_desc'] ?? '');
     $content   = trim($_POST['full_content'] ?? '');
@@ -22,43 +23,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$title || !$content) {
         $error = 'Title and content are required.';
     } else {
-        // Handle image upload — use __DIR__ for absolute path, only set DB column if move succeeds
+        // Handle image upload — extension + MIME validation + absolute path
         $image_path = null;
         if (!empty($_FILES['image']['name']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
             $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
-            if (in_array($ext, ['jpg','jpeg','png','gif','webp'])) {
+            if (in_array($ext, ['jpg','jpeg','png','gif','webp']) && validateUpload($_FILES['image'], 'image')) {
                 $filename = 'img_' . time() . '_' . rand(100,999) . '.' . $ext;
                 $destPath = __DIR__ . '/../images/' . $filename;
                 if (move_uploaded_file($_FILES['image']['tmp_name'], $destPath)) {
                     $image_path = 'images/' . $filename;
                 }
-                // If move fails (e.g. permissions), $image_path stays null so the post saves without a broken reference
+            } else {
+                $error = 'Invalid image file. Only real JPG, PNG, GIF, or WebP images are accepted.';
             }
         }
 
-        // Handle PDF upload — same pattern
+        // Handle PDF upload — extension + MIME validation
         $pdf_path = null;
-        if (!empty($_FILES['pdf']['name']) && $_FILES['pdf']['error'] === UPLOAD_ERR_OK) {
+        if (!$error && !empty($_FILES['pdf']['name']) && $_FILES['pdf']['error'] === UPLOAD_ERR_OK) {
             $ext = strtolower(pathinfo($_FILES['pdf']['name'], PATHINFO_EXTENSION));
-            if ($ext === 'pdf') {
+            if ($ext === 'pdf' && validateUpload($_FILES['pdf'], 'pdf')) {
                 $pdfname = 'pdf_' . time() . '_' . rand(100,999) . '.pdf';
                 $destPath = __DIR__ . '/../uploads/' . $pdfname;
                 if (move_uploaded_file($_FILES['pdf']['tmp_name'], $destPath)) {
                     $pdf_path = 'uploads/' . $pdfname;
                 }
+            } else {
+                $error = 'Invalid PDF file.';
             }
         }
 
-        $stmt = mysqli_prepare($conn, "
-            INSERT INTO dbProj_posts (title, short_desc, full_content, image_path, pdf_path, cat_id, uid, published)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ");
-        mysqli_stmt_bind_param($stmt, 'sssssiii', $title, $short, $content, $image_path, $pdf_path, $cat_id, $uid, $published);
-        if (mysqli_stmt_execute($stmt)) {
-            header('Location: dashboard.php');
-            exit;
-        } else {
-            $error = 'Failed to save post.';
+        if (!$error) {
+            $stmt = mysqli_prepare($conn, "
+                INSERT INTO dbProj_posts (title, short_desc, full_content, image_path, pdf_path, cat_id, uid, published)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+            mysqli_stmt_bind_param($stmt, 'sssssiii', $title, $short, $content, $image_path, $pdf_path, $cat_id, $uid, $published);
+            if (mysqli_stmt_execute($stmt)) {
+                header('Location: dashboard.php');
+                exit;
+            } else {
+                $error = 'Failed to save post.';
+            }
         }
     }
 }
@@ -86,6 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php if ($error): ?><div class="alert alert-error"><?= htmlspecialchars($error) ?></div><?php endif; ?>
 
     <form id="postForm" method="POST" enctype="multipart/form-data">
+        <?= csrf_input() ?>
         <div class="section-card">
             <h3>Content</h3>
             <div class="form-group">

@@ -10,14 +10,14 @@ $page    = max(1, (int)($_GET['page'] ?? 1));
 $offset  = ($page - 1) * $perPage;
 $catFilter = (int)($_GET['cat'] ?? 0);
 
-// Total published posts (with optional category filter)
+// Total published posts (with optional category filter, excluding soft-deleted)
 if ($catFilter) {
-    $cntStmt = mysqli_prepare($conn, "SELECT COUNT(*) AS cnt FROM dbProj_posts WHERE published = 1 AND cat_id = ?");
+    $cntStmt = mysqli_prepare($conn, "SELECT COUNT(*) AS cnt FROM dbProj_posts WHERE published = 1 AND is_deleted = 0 AND cat_id = ?");
     mysqli_stmt_bind_param($cntStmt, 'i', $catFilter);
     mysqli_stmt_execute($cntStmt);
     $total = mysqli_fetch_assoc(mysqli_stmt_get_result($cntStmt))['cnt'];
 } else {
-    $totalResult = mysqli_query($conn, "SELECT COUNT(*) AS cnt FROM dbProj_posts WHERE published = 1");
+    $totalResult = mysqli_query($conn, "SELECT COUNT(*) AS cnt FROM dbProj_posts WHERE published = 1 AND is_deleted = 0");
     $total = mysqli_fetch_assoc($totalResult)['cnt'];
 }
 $totalPages = ceil($total / $perPage);
@@ -33,7 +33,7 @@ if ($catFilter) {
         LEFT JOIN dbProj_users      u ON p.uid    = u.uid
         LEFT JOIN dbProj_categories c ON p.cat_id = c.cat_id
         LEFT JOIN dbProj_ratings    r ON p.post_id = r.post_id
-        WHERE p.published = 1 AND p.cat_id = ?
+        WHERE p.published = 1 AND p.is_deleted = 0 AND p.cat_id = ?
         GROUP BY p.post_id
         ORDER BY p.created_at DESC
         LIMIT ? OFFSET ?
@@ -49,7 +49,7 @@ if ($catFilter) {
         LEFT JOIN dbProj_users      u ON p.uid    = u.uid
         LEFT JOIN dbProj_categories c ON p.cat_id = c.cat_id
         LEFT JOIN dbProj_ratings    r ON p.post_id = r.post_id
-        WHERE p.published = 1
+        WHERE p.published = 1 AND p.is_deleted = 0
         GROUP BY p.post_id
         ORDER BY p.created_at DESC
         LIMIT ? OFFSET ?

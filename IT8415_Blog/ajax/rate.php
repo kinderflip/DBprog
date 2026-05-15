@@ -11,6 +11,7 @@ if (!isset($_SESSION['uid'])) {
 }
 
 require_once '../DBConn.php';
+requireCsrfAjax();
 
 $post_id = (int)($_POST['post_id'] ?? 0);
 $rating  = (int)($_POST['rating']  ?? 0);

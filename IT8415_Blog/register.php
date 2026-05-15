@@ -11,16 +11,12 @@ $error = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    requireCsrf();
     $username = trim($_POST['username'] ?? '');
     $email    = trim($_POST['email']    ?? '');
     $password =       $_POST['password'] ?? '';
     $confirm  =       $_POST['confirm']  ?? '';
     $role     =       $_POST['role']     ?? 'viewer';
-
-    // Whitelist role — never trust user input. Only viewer/creator allowed at signup.
-    if (!in_array($role, ['viewer', 'creator'], true)) {
-        $role = 'viewer';
-    }
 
     // Server-side validation
     if (!$username || !$email || !$password || !$confirm) {
@@ -31,6 +27,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Password must be at least 6 characters.';
     } elseif ($password !== $confirm) {
         $error = 'Passwords do not match.';
+    } elseif (!in_array($role, ['viewer', 'creator'], true)) {
+        // Whitelist role — only viewer/creator allowed at signup.
+        // If someone tampers (e.g. sends role=admin), show a visible error instead of silently downgrading.
+        $error = 'Invalid role selected. Please choose Reader or Writer.';
     } else {
         // Check if email already exists — prepared statement
         $stmt = mysqli_prepare($conn, "SELECT uid FROM dbProj_users WHERE email = ?");
@@ -80,6 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <form id="registerForm" method="POST" action="register.php" novalidate>
+            <?= csrf_input() ?>
             <div class="form-group">
                 <label>Username</label>
                 <input type="text" name="username" id="username" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" placeholder="Choose a username">
