@@ -1,17 +1,6 @@
-# IT8415 Blog — Block PHP execution in uploads/ directory
-# Prevents any uploaded file from being executed as PHP.
+# IT8415 Blog — Block server-side script execution in uploads/
+# Minimal directive that works on all Apache 2.4+ configs.
 
-<FilesMatch "\.(php|php3|php4|php5|php7|phtml|phar|pl|py|cgi|sh)$">
+<FilesMatch "\.(php|phtml|phar|pl|py|cgi|sh)$">
     Require all denied
 </FilesMatch>
-
-# Disable PHP handler if loaded (no error if module isn't present)
-<IfModule mod_php.c>
-    php_flag engine off
-</IfModule>
-<IfModule mod_php7.c>
-    php_flag engine off
-</IfModule>
-<IfModule mod_php8.c>
-    php_flag engine off
-</IfModule>
