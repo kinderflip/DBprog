@@ -80,6 +80,61 @@ CREATE TABLE IF NOT EXISTS dbProj_ratings (
 );
 
 -- ============================================================
+-- 6. NOTIFICATIONS (delivered to a recipient_uid, set by triggers)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dbProj_notifications (
+    notif_id      INT AUTO_INCREMENT PRIMARY KEY,
+    recipient_uid INT NOT NULL,
+    type          ENUM('comment','rating','system') NOT NULL DEFAULT 'system',
+    message       VARCHAR(500) NOT NULL,
+    link          VARCHAR(255),
+    is_read       TINYINT(1) NOT NULL DEFAULT 0,
+    created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (recipient_uid) REFERENCES dbProj_users(uid) ON DELETE CASCADE,
+    INDEX idx_recipient_unread  (recipient_uid, is_read),
+    INDEX idx_recipient_created (recipient_uid, created_at)
+);
+
+-- ============================================================
+-- TRIGGERS — auto-create notifications for comments and ratings
+-- ============================================================
+DELIMITER $$
+CREATE TRIGGER trg_comment_notify
+AFTER INSERT ON dbProj_comments
+FOR EACH ROW
+BEGIN
+    DECLARE post_owner INT;
+    DECLARE post_title VARCHAR(200);
+    DECLARE commenter_name VARCHAR(50);
+    SELECT uid, title INTO post_owner, post_title FROM dbProj_posts WHERE post_id = NEW.post_id;
+    SELECT username INTO commenter_name FROM dbProj_users WHERE uid = NEW.uid;
+    IF post_owner IS NOT NULL AND post_owner <> NEW.uid THEN
+        INSERT INTO dbProj_notifications (recipient_uid, type, message, link)
+        VALUES (post_owner, 'comment',
+                CONCAT(commenter_name, ' commented on "', post_title, '"'),
+                CONCAT('view_post.php?id=', NEW.post_id));
+    END IF;
+END$$
+
+CREATE TRIGGER trg_rating_notify
+AFTER INSERT ON dbProj_ratings
+FOR EACH ROW
+BEGIN
+    DECLARE post_owner INT;
+    DECLARE post_title VARCHAR(200);
+    DECLARE rater_name VARCHAR(50);
+    SELECT uid, title INTO post_owner, post_title FROM dbProj_posts WHERE post_id = NEW.post_id;
+    SELECT username INTO rater_name FROM dbProj_users WHERE uid = NEW.uid;
+    IF post_owner IS NOT NULL AND post_owner <> NEW.uid THEN
+        INSERT INTO dbProj_notifications (recipient_uid, type, message, link)
+        VALUES (post_owner, 'rating',
+                CONCAT(rater_name, ' rated "', post_title, '" ', NEW.rating, ' star(s)'),
+                CONCAT('view_post.php?id=', NEW.post_id));
+    END IF;
+END$$
+DELIMITER ;
+
+-- ============================================================
 -- STORED PROCEDURE: GetPopularContent(startDate, endDate)
 -- Returns posts ordered by average rating in date range
 -- ============================================================
