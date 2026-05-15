@@ -1,13 +1,11 @@
 # IT8415 Blog — Block PHP execution in images/ directory
-# Prevents any uploaded file disguised as an image from being executed as PHP.
+# Prevents any uploaded file disguised as an image from being executed.
 
 <FilesMatch "\.(php|php3|php4|php5|php7|phtml|phar|pl|py|cgi|sh)$">
-    Order Deny,Allow
-    Deny from all
     Require all denied
 </FilesMatch>
 
-# Disable PHP handler entirely
+# Disable PHP handler if loaded (no error if module isn't present)
 <IfModule mod_php.c>
     php_flag engine off
 </IfModule>
@@ -17,6 +15,3 @@
 <IfModule mod_php8.c>
     php_flag engine off
 </IfModule>
-
-# Set safe default content type for any non-image file
-AddType text/plain .php .phtml .php3 .php4 .php5 .php7 .phar .pl .py

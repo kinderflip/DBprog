@@ -73,23 +73,30 @@ function validateUpload($file, $type) {
     if (empty($file['tmp_name']) || $file['error'] !== UPLOAD_ERR_OK) return false;
     if (!is_uploaded_file($file['tmp_name'])) return false;
 
-    if (!function_exists('finfo_open')) {
-        // finfo extension not available — fall back to getimagesize for images
-        if ($type === 'image') {
-            return @getimagesize($file['tmp_name']) !== false;
-        }
-        return false;
-    }
-    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-    $mime  = finfo_file($finfo, $file['tmp_name']);
-    finfo_close($finfo);
-
+    // Primary check for images: getimagesize() — most reliable, doesn't need fileinfo extension
     if ($type === 'image') {
-        return in_array($mime, ['image/jpeg', 'image/png', 'image/gif', 'image/webp'], true);
+        $info = @getimagesize($file['tmp_name']);
+        if ($info === false) return false;
+        // getimagesize returns IMAGETYPE_* constants — accept the standard web image types
+        return in_array($info[2], [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF, IMAGETYPE_WEBP], true);
     }
+
+    // PDFs need finfo or a magic-bytes check
     if ($type === 'pdf') {
-        return $mime === 'application/pdf';
+        if (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mime  = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+            return $mime === 'application/pdf';
+        }
+        // Fallback: check magic bytes — PDFs start with "%PDF-"
+        $fp = fopen($file['tmp_name'], 'rb');
+        if (!$fp) return false;
+        $head = fread($fp, 5);
+        fclose($fp);
+        return $head === '%PDF-';
     }
+
     return false;
 }
 ?>

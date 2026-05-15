@@ -2,12 +2,10 @@
 # Prevents any uploaded file from being executed as PHP.
 
 <FilesMatch "\.(php|php3|php4|php5|php7|phtml|phar|pl|py|cgi|sh)$">
-    Order Deny,Allow
-    Deny from all
     Require all denied
 </FilesMatch>
 
-# Disable PHP handler entirely
+# Disable PHP handler if loaded (no error if module isn't present)
 <IfModule mod_php.c>
     php_flag engine off
 </IfModule>
@@ -17,11 +15,3 @@
 <IfModule mod_php8.c>
     php_flag engine off
 </IfModule>
-
-# Force browser download for PDFs (prevents inline-PDF browser exploits)
-<FilesMatch "\.pdf$">
-    Header set Content-Disposition "attachment"
-</FilesMatch>
-
-# Set safe default content type for non-PDF files
-AddType text/plain .php .phtml .php3 .php4 .php5 .php7 .phar .pl .py
